@@ -104,3 +104,31 @@ exports.deletePerfil = function (req, res, next) { return __awaiter(void 0, void
         }
     });
 }); };
+exports.login = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var user1, user, isMatch, token;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                user1 = new model_1.User(req.body);
+                if (!req.body.email || !req.body.password) {
+                    return [2 /*return*/, res.status(400).json('Please. Send your email and password')];
+                }
+                return [4 /*yield*/, model_1.User.findOne({ email: req.body.email })];
+            case 1:
+                user = _a.sent();
+                if (!user) {
+                    return [2 /*return*/, res.status(400).json('email invalid')];
+                }
+                return [4 /*yield*/, user.comparePassword(req.body.password)];
+            case 2:
+                isMatch = _a.sent();
+                if (!isMatch) {
+                    return [2 /*return*/, res.status(400).json('password invalid')];
+                }
+                return [4 /*yield*/, user.generateAuthTOken()];
+            case 3:
+                token = _a.sent();
+                return [2 /*return*/, res.status(400).json({ user: user, token: token })];
+        }
+    });
+}); };

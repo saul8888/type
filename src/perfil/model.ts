@@ -1,5 +1,6 @@
 import { model,Schema, Document } from "mongoose";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import validator from "validator";
 
 const collection = "Perfils"
@@ -12,7 +13,9 @@ export interface IUser extends Document {
     posts: Schema.Types.ObjectId;
     friend: Schema.Types.ObjectId;
     tokens: string[];
+    generateAuthTOken: () => Promise<string>;
     comparePassword: (password: string) => Promise<Boolean>;
+    //findByCredentials: (email: string,password:string) => Promise<IUser>;
 }
 
 const userSchema = new Schema({
@@ -63,19 +66,54 @@ const userSchema = new Schema({
     timestamps: true
 })
 
+userSchema.methods.toJSON = function () {
+    const user = this
+    const userObject = user.toObject()
+
+    delete userObject.password
+    delete userObject.tokens
+    return userObject
+}
+
 userSchema.pre<IUser>("save", async function(next) {
     const user = this;
     
     if (!user.isModified("password")) return next();
   
-    const salt = await bcrypt.genSalt(10);
-    const hash = await bcrypt.hash(user.password, salt);
+    const hash = await bcrypt.hash(user.password, 8);
     user.password = hash;
     next();
 });
-  
+
 userSchema.methods.comparePassword = async function(password: string): Promise<Boolean> {
     return await bcrypt.compare(password, this.password);
 };
 
+userSchema.methods.generateAuthTOken = async function (): Promise<string>{
+    const user =this
+    const token = jwt.sign({_id: user._id.toString()}, "secret")
+
+    user.tokens = user.tokens.concat({ token })
+    await user.save()
+
+    return token
+}
+
 export const User = model<IUser>(collection, userSchema)
+
+
+/*
+userSchema.methods.findByCredentials = async (email: string,password:string):Promise<IUser>=>{
+    const user = await User.findOne({email})
+    if (!user) {
+        throw new Error('email invalid')
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password)
+    if (!isMatch) {
+        throw new Error('password invalid')
+    }
+
+    return user
+}
+*/

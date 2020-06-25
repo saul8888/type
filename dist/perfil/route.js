@@ -6,6 +6,7 @@ var perfil = express_1.Router();
 perfil.get("/total", handler_1.getPerfils);
 //create a red
 perfil.post("/register", handler_1.createPerfil);
+perfil.post("/login", handler_1.login);
 perfil.get("/me", handler_1.getPerfil);
 perfil.put("", handler_1.updatePerfil);
 perfil.delete("", handler_1.deletePerfil);

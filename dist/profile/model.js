@@ -42,8 +42,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var mongoose_1 = require("mongoose");
 var bcrypt_1 = __importDefault(require("bcrypt"));
 var jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-var collection = "Perfils";
-var userSchema = new mongoose_1.Schema({
+var model_1 = require("../post/model");
+var model_2 = require("../friends/model");
+var collection = "Profiles";
+var profileSchema = new mongoose_1.Schema({
     name: {
         type: String,
         required: true,
@@ -72,7 +74,7 @@ var userSchema = new mongoose_1.Schema({
         }],
     friend: [{
             type: mongoose_1.Schema.Types.ObjectId,
-            ref: 'Friends'
+            ref: 'Profiles'
         }],
     tokens: [{
             token: {
@@ -83,40 +85,33 @@ var userSchema = new mongoose_1.Schema({
 }, {
     timestamps: true
 });
-/*
-userSchema.virtual('public', {
-    ref: 'Publics',
-    localField: '_id',
-    foreignField: 'userId'
-})
-*/
-userSchema.methods.toJSON = function () {
-    var user = this;
-    var userObject = user.toObject();
-    delete userObject.password;
-    delete userObject.tokens;
-    return userObject;
+profileSchema.methods.toJSON = function () {
+    var profile = this;
+    var profileObject = profile.toObject();
+    delete profileObject.password;
+    delete profileObject.tokens;
+    return profileObject;
 };
-userSchema.pre("save", function (next) {
+profileSchema.pre("save", function (next) {
     return __awaiter(this, void 0, void 0, function () {
-        var user, hash;
+        var profile, hash;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    user = this;
-                    if (!user.isModified("password"))
+                    profile = this;
+                    if (!profile.isModified("password"))
                         return [2 /*return*/, next()];
-                    return [4 /*yield*/, bcrypt_1.default.hash(user.password, 8)];
+                    return [4 /*yield*/, bcrypt_1.default.hash(profile.password, 8)];
                 case 1:
                     hash = _a.sent();
-                    user.password = hash;
+                    profile.password = hash;
                     next();
                     return [2 /*return*/];
             }
         });
     });
 });
-userSchema.methods.comparePassword = function (password) {
+profileSchema.methods.comparePassword = function (password) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
@@ -126,16 +121,16 @@ userSchema.methods.comparePassword = function (password) {
         });
     });
 };
-userSchema.methods.generateAuthTOken = function () {
+profileSchema.methods.generateAuthTOken = function () {
     return __awaiter(this, void 0, void 0, function () {
-        var user, token;
+        var profile, token;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    user = this;
-                    token = jsonwebtoken_1.default.sign({ _id: user._id.toString() }, "secret");
-                    user.tokens = user.tokens.concat({ token: token });
-                    return [4 /*yield*/, user.save()];
+                    profile = this;
+                    token = jsonwebtoken_1.default.sign({ _id: profile._id.toString() }, "secret");
+                    profile.tokens = profile.tokens.concat({ token: token });
+                    return [4 /*yield*/, profile.save()];
                 case 1:
                     _a.sent();
                     return [2 /*return*/, token];
@@ -143,19 +138,38 @@ userSchema.methods.generateAuthTOken = function () {
         });
     });
 };
-exports.User = mongoose_1.model(collection, userSchema);
+profileSchema.pre('remove', function (next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var profile;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    profile = this;
+                    return [4 /*yield*/, model_1.Public.deleteMany({ userId: profile._id })];
+                case 1:
+                    _a.sent();
+                    return [4 /*yield*/, model_2.Friend.deleteMany({ userId: profile._id })];
+                case 2:
+                    _a.sent();
+                    next();
+                    return [2 /*return*/];
+            }
+        });
+    });
+});
+exports.Profile = mongoose_1.model(collection, profileSchema);
 /*
-userSchema.methods.findByCredentials = async (email: string,password:string):Promise<IUser>=>{
-    const user = await User.findOne({email})
-    if (!user) {
+profileSchema.methods.findByCredentials = async (email: string,password:string):Promise<Iprofile>=>{
+    const profile = await profile.findOne({email})
+    if (!profile) {
         throw new Error('email invalid')
     }
 
-    const isMatch = await bcrypt.compare(password, user.password)
+    const isMatch = await bcrypt.compare(password, profile.password)
     if (!isMatch) {
         throw new Error('password invalid')
     }
 
-    return user
+    return profile
 }
 */ 

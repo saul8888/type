@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -36,71 +47,133 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-//import { Request, Response, NextFunction, Router } from 'express';
 var model_1 = require("./model");
 exports.createPost = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var newPost;
+    var profile, newPost, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                newPost = new model_1.Post(req.body);
-                return [4 /*yield*/, newPost.save()];
+                profile = req.profile._id;
+                newPost = new model_1.Public(__assign(__assign({}, req.body), { userId: profile }));
+                _a.label = 1;
             case 1:
+                _a.trys.push([1, 3, , 4]);
+                newPost.addPostProfile(profile);
+                return [4 /*yield*/, newPost.save()];
+            case 2:
                 _a.sent();
                 res.status(200).send(newPost);
-                return [2 /*return*/];
+                return [3 /*break*/, 4];
+            case 3:
+                error_1 = _a.sent();
+                console.log(error_1);
+                res.status(400).send(error_1);
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
         }
     });
 }); };
-exports.getPosts = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var posts;
+exports.getTotalPost = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var profile, posts, error_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: return [4 /*yield*/, model_1.Post.find()];
+            case 0:
+                profile = req.profile._id;
+                _a.label = 1;
             case 1:
+                _a.trys.push([1, 3, , 4]);
+                return [4 /*yield*/, model_1.Public.find({ userId: profile }).populate('userId', 'name -_id')];
+            case 2:
                 posts = _a.sent();
+                ;
                 res.json(posts);
-                return [2 /*return*/];
+                return [3 /*break*/, 4];
+            case 3:
+                error_2 = _a.sent();
+                res.status(400).send(error_2);
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
         }
     });
 }); };
 exports.getPost = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var post;
+    var id, post, error_3;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: return [4 /*yield*/, model_1.Post.findById(req.params.id)];
+            case 0:
+                id = req.params.id;
+                _a.label = 1;
             case 1:
+                _a.trys.push([1, 3, , 4]);
+                return [4 /*yield*/, model_1.Public.findById(id).populate('userId', 'name -_id')];
+            case 2:
                 post = _a.sent();
                 res.json(post);
-                return [2 /*return*/];
+                return [3 /*break*/, 4];
+            case 3:
+                error_3 = _a.sent();
+                res.status(400).send(error_3);
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
         }
     });
 }); };
 exports.updatePost = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var id, post;
+    var id, profile, updates, allowed, isValid, post, error_4;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 id = req.params.id;
-                return [4 /*yield*/, model_1.Post.findByIdAndUpdate(id, req.body, { new: true })];
+                profile = req.profile._id;
+                updates = Object.keys(req.body);
+                allowed = ['post'];
+                isValid = updates.every(function (update) { return allowed.includes(update); });
+                if (!isValid) {
+                    return [2 /*return*/, res.status(400).send({ error: 'Invalid updates!' })];
+                }
+                _a.label = 1;
             case 1:
+                _a.trys.push([1, 4, , 5]);
+                return [4 /*yield*/, model_1.Public.findOne({ _id: id, userId: profile })];
+            case 2:
                 post = _a.sent();
-                res.json(post);
-                return [2 /*return*/];
+                if (!post) {
+                    return [2 /*return*/, res.status(404).send()];
+                }
+                post.post = req.body['post'];
+                return [4 /*yield*/, post.save()];
+            case 3:
+                _a.sent();
+                res.send(post);
+                return [3 /*break*/, 5];
+            case 4:
+                error_4 = _a.sent();
+                res.status(400).send(error_4);
+                return [3 /*break*/, 5];
+            case 5: return [2 /*return*/];
         }
     });
 }); };
 exports.deletePost = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var id, post;
+    var id, profile, post, error_5;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 id = req.params.id;
-                return [4 /*yield*/, model_1.Post.findByIdAndRemove(id)];
+                profile = req.profile._id;
+                _a.label = 1;
             case 1:
+                _a.trys.push([1, 3, , 4]);
+                return [4 /*yield*/, model_1.Public.findOneAndDelete({ _id: id, userId: profile })];
+            case 2:
                 post = _a.sent();
                 res.json(post);
-                return [2 /*return*/];
+                return [3 /*break*/, 4];
+            case 3:
+                error_5 = _a.sent();
+                res.status(400).send(error_5);
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
         }
     });
 }); };

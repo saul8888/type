@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -38,68 +49,132 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var model_1 = require("./model");
 exports.createFriend = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var newUser;
+    var profile, friend, newFriend, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                newUser = new model_1.User(req.body);
-                return [4 /*yield*/, newUser.save()];
+                profile = req.profile._id;
+                friend = req.params.id;
+                newFriend = new model_1.Friend(__assign(__assign({}, req.body), { userId: profile, friendId: friend }));
+                _a.label = 1;
             case 1:
+                _a.trys.push([1, 3, , 4]);
+                newFriend.addFriendProfile(profile, friend);
+                return [4 /*yield*/, newFriend.save()];
+            case 2:
                 _a.sent();
-                res.status(200).send(newUser);
-                return [2 /*return*/];
+                res.status(200).send(newFriend);
+                return [3 /*break*/, 4];
+            case 3:
+                error_1 = _a.sent();
+                res.status(400).send(error_1);
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
         }
     });
 }); };
-exports.getFriends = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var users;
+exports.getTotalFriend = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var user, friends, error_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: return [4 /*yield*/, model_1.User.find().populate('posts', 'title url -_id')];
+            case 0:
+                user = req.profile._id;
+                _a.label = 1;
             case 1:
-                users = _a.sent();
-                res.json(users);
-                return [2 /*return*/];
+                _a.trys.push([1, 3, , 4]);
+                return [4 /*yield*/, model_1.Friend.find({ userId: user }).populate('userId', 'name').populate('friendId', 'name')];
+            case 2:
+                friends = _a.sent();
+                res.json(friends);
+                return [3 /*break*/, 4];
+            case 3:
+                error_2 = _a.sent();
+                console.log(error_2);
+                res.status(400).send(error_2);
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
         }
     });
 }); };
 exports.getFriend = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var user;
+    var id, user, friend, error_3;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: return [4 /*yield*/, model_1.User.findById(req.params.id).populate('posts')];
+            case 0:
+                id = req.params.id;
+                user = req.profile._id;
+                _a.label = 1;
             case 1:
-                user = _a.sent();
-                res.json(user);
-                return [2 /*return*/];
+                _a.trys.push([1, 3, , 4]);
+                return [4 /*yield*/, model_1.Friend.findOne({ userId: user, friendId: id }).populate('userId', 'name').populate('friendId', 'name')];
+            case 2:
+                friend = _a.sent();
+                res.json(friend);
+                return [3 /*break*/, 4];
+            case 3:
+                error_3 = _a.sent();
+                res.status(400).send(error_3);
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
         }
     });
 }); };
 exports.updateFriend = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var id, user;
+    var id, user, updates, allowed, isValid, friend, error_4;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 id = req.params.id;
-                return [4 /*yield*/, model_1.User.findByIdAndUpdate(id, req.body, { new: true })];
+                user = req.profile._id;
+                updates = Object.keys(req.body);
+                allowed = ['description'];
+                isValid = updates.every(function (update) { return allowed.includes(update); });
+                if (!isValid) {
+                    return [2 /*return*/, res.status(400).send({ error: 'Invalid updates!' })];
+                }
+                _a.label = 1;
             case 1:
-                user = _a.sent();
-                res.json(user);
-                return [2 /*return*/];
+                _a.trys.push([1, 4, , 5]);
+                return [4 /*yield*/, model_1.Friend.findOne({ userId: user, friendId: id })];
+            case 2:
+                friend = _a.sent();
+                if (!friend) {
+                    return [2 /*return*/, res.status(404).send({ error: 'dont exict friend!' })];
+                }
+                friend.description = req.body['description'];
+                return [4 /*yield*/, friend.save()];
+            case 3:
+                _a.sent();
+                res.send(friend);
+                return [3 /*break*/, 5];
+            case 4:
+                error_4 = _a.sent();
+                res.status(400).send(error_4);
+                return [3 /*break*/, 5];
+            case 5: return [2 /*return*/];
         }
     });
 }); };
 exports.deleteFriend = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var id, user;
+    var id, user, friend, error_5;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 id = req.params.id;
-                return [4 /*yield*/, model_1.User.findByIdAndRemove(id)];
+                user = req.profile._id;
+                _a.label = 1;
             case 1:
-                user = _a.sent();
-                res.json(user);
-                return [2 /*return*/];
+                _a.trys.push([1, 3, , 4]);
+                return [4 /*yield*/, model_1.Friend.findOneAndDelete({ _id: id, userId: user })];
+            case 2:
+                friend = _a.sent();
+                res.json(friend);
+                return [3 /*break*/, 4];
+            case 3:
+                error_5 = _a.sent();
+                res.status(400).send(error_5);
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
         }
     });
 }); };

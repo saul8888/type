@@ -1,8 +1,16 @@
-import Mongoose, { Schema } from "mongoose";
+import { Schema, model, Document } from "mongoose";
+import { Profile } from "../profile/model";
 
 const collection = "Friends"
 
-const friendSchema = new Mongoose.Schema({
+export interface IFriend extends Document {
+    description: string;
+    friendId: Schema.Types.ObjectId;
+    userId: Schema.Types.ObjectId;
+    addFriendProfile: (id: string,friendId: string) => Promise<void>;
+};
+
+const friendSchema = new Schema({
     description: {
         type: String,
         trim: true
@@ -21,36 +29,14 @@ const friendSchema = new Mongoose.Schema({
     timestamps: true
 })
 
-export const User = Mongoose.model(collection, friendSchema)
-
-
-/*
-class UserRouter {
-    router: Router;
-
-    constructor() {
-        this.router = Router();
-        this.routes();
+friendSchema.methods.addFriendProfile = async function(id: string,friendId: string): Promise<void> {
+    const profile = await Profile.findById(id)
+    const friend = await Profile.findById(friendId)
+    if (!profile || !friend) {
+        throw new Error('there arent profile')
     }
+    profile.friend = profile.friend.concat(<any>friendId)
+    await profile.save()
+};
 
-    async createUser(req: Request, res: Response): Promise<void> {
-        const newUser = new User(req.body);
-        await newUser.save();
-        res.json({ status: 200, newUser });
-    }
-
-    create: RequestHandler = async (req,res, next) => {
-        const newUser = new User(req.body);
-        await newUser.save();
-        res.json({ status: 200, newUser });
-    }
-
-    routes() {
-        this.router.post('/', this.createUser);
-        this.router.post('/', this.create);
-    }
-
-}
-const userRouter = new UserRouter();
-export default userRouter.router;
-*/
+export const Friend = model<IFriend>(collection, friendSchema)

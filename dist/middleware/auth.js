@@ -35,50 +35,39 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-var mongoose_1 = require("mongoose");
-var model_1 = require("../profile/model");
-var collection = "Friends";
-;
-var friendSchema = new mongoose_1.Schema({
-    description: {
-        type: String,
-        trim: true
-    },
-    friendId: {
-        type: mongoose_1.Schema.Types.ObjectId,
-        required: true,
-        ref: 'Profiles'
-    },
-    userId: {
-        type: mongoose_1.Schema.Types.ObjectId,
-        required: true,
-        ref: 'Profiles'
-    }
-}, {
-    timestamps: true
-});
-friendSchema.methods.addFriendProfile = function (id, friendId) {
-    return __awaiter(this, void 0, void 0, function () {
-        var profile, friend;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, model_1.Profile.findById(id)];
-                case 1:
-                    profile = _a.sent();
-                    return [4 /*yield*/, model_1.Profile.findById(friendId)];
-                case 2:
-                    friend = _a.sent();
-                    if (!profile || !friend) {
-                        throw new Error('there arent profile');
-                    }
-                    profile.friend = profile.friend.concat(friendId);
-                    return [4 /*yield*/, profile.save()];
-                case 3:
-                    _a.sent();
-                    return [2 /*return*/];
-            }
-        });
-    });
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-exports.Friend = mongoose_1.model(collection, friendSchema);
+Object.defineProperty(exports, "__esModule", { value: true });
+var jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+var model_1 = require("../profile/model");
+exports.auth = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var authHeader, token, decoded, profile, error_1;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                _a.trys.push([0, 2, , 3]);
+                authHeader = req.headers.authorization;
+                if (!authHeader) {
+                    throw new Error("there not header");
+                }
+                token = authHeader.split(' ')[1];
+                decoded = jsonwebtoken_1.default.verify(token, "secret");
+                return [4 /*yield*/, model_1.Profile.findOne({ _id: decoded._id })];
+            case 1:
+                profile = _a.sent();
+                if (!profile) {
+                    throw new Error("not exit profile");
+                }
+                req.token = token;
+                req.profile = profile;
+                next();
+                return [3 /*break*/, 3];
+            case 2:
+                error_1 = _a.sent();
+                res.status(401).send({ error: "there not token" });
+                return [3 /*break*/, 3];
+            case 3: return [2 /*return*/];
+        }
+    });
+}); };

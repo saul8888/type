@@ -1,8 +1,15 @@
-import Mongoose, { Schema } from "mongoose";
+import { Schema, model, Document } from "mongoose";
+import { Profile } from "../profile/model";
 
 const collection = "Posts"
 
-const postSchema = new Mongoose.Schema({
+export interface IPublic extends Document {
+    post: string;
+    userId: Schema.Types.ObjectId;
+    addPostProfile: (id: string) => Promise<void>;
+};
+
+const postSchema = new Schema({
     post: {
         type: String,
         trim: true
@@ -10,10 +17,27 @@ const postSchema = new Mongoose.Schema({
     userId: {
         type: Schema.Types.ObjectId,
         required: true,
-        ref: 'User'
+        ref: 'Profiles'
     }
 },{
     timestamps: true
 })
 
-export const Post = Mongoose.model(collection, postSchema)
+postSchema.methods.addPostProfile = async function(id: string): Promise<void> {
+    const newpost = this._id
+    const profile = await Profile.findById(id)
+    if (!profile) {
+        throw new Error('there arent profile')
+    }
+    profile.posts = profile.posts.concat(newpost)
+    await profile.save()
+};
+
+export const Public = model<IPublic>(collection, postSchema)
+
+/*
+postSchema.pre<IPublic>("save", async function(next) {
+    const user = this;
+    next();
+});
+*/

@@ -104,14 +104,8 @@ exports.updateProfile = function (req, res, next) { return __awaiter(void 0, voi
                     return [2 /*return*/, res.status(404).send({ error: 'dont exict profile!' })];
                 }
                 updates.forEach(function (update1) { return profile_1[update1] = req.body[update1]; });
-                //profile.name= req.body['name']
-                //profile.email= req.body['email']
-                //profile.location= req.body['location']
                 return [4 /*yield*/, profile_1.save()];
             case 3:
-                //profile.name= req.body['name']
-                //profile.email= req.body['email']
-                //profile.location= req.body['location']
                 _a.sent();
                 res.send(profile_1);
                 return [3 /*break*/, 5];

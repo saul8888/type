@@ -5,6 +5,7 @@ import profile from './profile/route';
 import post from './post/route';
 import friend from './friends/route';
 import {loggerMiddleware} from './middleware/logger';
+import { PORT } from "./config/config";
 
 const app = express()
 app.use(json())
@@ -16,4 +17,4 @@ app.use('/profile',profile)
 app.use('/post',post)
 app.use('/friend',friend)
 
-app.listen(3000)
+app.listen(PORT)

@@ -1,15 +1,14 @@
 import Mongoose from "mongoose";
-
+import { URL } from "../config/config";
 
 let database: Mongoose.Connection;
 export const connect = () => {
-    const db= "type"
-    const url = `mongodb+srv://saul:1234@cluster0-ooeaq.mongodb.net/${db}?retryWrites=true&w=majority`;
+
     if (database) {
         return;
     }
 
-    Mongoose.connect(url, {
+    Mongoose.connect(URL, {
         useNewUrlParser: true,
         useFindAndModify: true,
         useUnifiedTopology: true,

@@ -40,14 +40,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var mongoose_1 = __importDefault(require("mongoose"));
+var config_1 = require("../config/config");
 var database;
 exports.connect = function () {
-    var db = "type";
-    var url = "mongodb+srv://saul:1234@cluster0-ooeaq.mongodb.net/" + db + "?retryWrites=true&w=majority";
+    //const db= "type"
+    //const url = `mongodb+srv://saul:1234@cluster0-ooeaq.mongodb.net/${db}?retryWrites=true&w=majority`;
+    //const url = URL
+    //console.log(URL)
     if (database) {
         return;
     }
-    mongoose_1.default.connect(url, {
+    mongoose_1.default.connect(config_1.URL, {
         useNewUrlParser: true,
         useFindAndModify: true,
         useUnifiedTopology: true,
